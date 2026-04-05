@@ -153,12 +153,6 @@ export default function DropZone({ onFileSelect, isProcessing }: DropZoneProps) 
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
-
-      <style jsx>{`
-        #file-input {
-          display: none;
-        }
-      `}</style>
     </div>
   )
 }
