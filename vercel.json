@@ -4,7 +4,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "nodeVersion": "20.x",
   "builds": [
     {
       "src": "package.json",
