@@ -1,0 +1,76 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run build
+      run: npm run build
+    
+    - name: Run lint
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Deploy to Cloudflare Pages
+      if: github.ref == 'refs/heads/main'
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: quickbg-remover
+        directory: .next
+        
+    - name: Deploy to Vercel
+      if: github.ref == 'refs/heads/master'
+      uses: vercel/action@v1
+      with:
+        vercelToken: ${{ secrets.VERCEL_TOKEN }}
+        vercelOrgId: ${{ secrets.VERCEL_ORG_ID }}
+        vercelProjectId: ${{ secrets.VERCEL_PROJECT_ID }}
+        workingDirectory: ./background-remover
+
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run type checking
+      run: npx tsc --noEmit
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run unit tests
+      run: npm test
