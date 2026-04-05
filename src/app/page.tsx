@@ -69,7 +69,7 @@ export default function HomePage() {
     setProcessingStatus({ status: 'idle' })
   }, [])
 
-  const canDownload = processingStatus.status === 'completed' && imageData?.processed
+  const canDownload = !!(processingStatus.status === 'completed' && imageData?.processed)
   const isProcessing = processingStatus.status === 'uploading' || processingStatus.status === 'processing'
 
   return (

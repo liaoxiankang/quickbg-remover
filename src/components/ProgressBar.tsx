@@ -67,7 +67,7 @@ export default function ProgressBar({ status, progress }: ProgressBarProps) {
               ? 'bg-green-500' 
               : status === 'error'
               ? 'bg-red-500'
-              : 'bg-primary-500'
+              : 'bg-blue-500'
           }`}
           style={{ width: `${getProgress()}%` }}
         />

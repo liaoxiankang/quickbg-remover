@@ -86,7 +86,7 @@ export default function ImagePreview({
             ) : (
               <div className="flex items-center justify-center h-80 bg-gray-100">
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-gray-500">正在移除背景...</p>
                 </div>
               </div>

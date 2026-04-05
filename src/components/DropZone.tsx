@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
-import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { Upload, Image as ImageIcon } from 'lucide-react'
 import { validateImageFile } from '@/lib/utils'
 
 interface DropZoneProps {
@@ -96,14 +96,19 @@ export default function DropZone({ onFileSelect, isProcessing }: DropZoneProps) 
     <div
       className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
         isDragActive 
-          ? 'border-primary-500 bg-primary-50' 
-          : 'border-gray-300 hover:border-primary-300 bg-white'
+          ? 'border-blue-500 bg-blue-50' 
+          : 'border-gray-300 hover:border-blue-400 bg-white'
       } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       onDragEnter={handleDrag}
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
       onDrop={handleDrop}
-      onClick={() !isProcessing && document.getElementById('file-input')?.click()}
+      onClick={() => {
+        if (!isProcessing) {
+          const input = document.getElementById('file-input') as HTMLInputElement
+          input?.click()
+        }
+      }}
     >
       <input
         id="file-input"
@@ -116,7 +121,7 @@ export default function DropZone({ onFileSelect, isProcessing }: DropZoneProps) 
 
       {isProcessing ? (
         <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-600">正在处理中...</p>
         </div>
       ) : (
@@ -128,7 +133,7 @@ export default function DropZone({ onFileSelect, isProcessing }: DropZoneProps) 
           <div className="space-y-2">
             <h3 className="text-xl font-semibold text-gray-900">拖拽图片到这里</h3>
             <p className="text-gray-600">
-              或者 <span className="text-primary-600 font-medium">点击选择文件</span>
+              或者 <span className="text-blue-600 font-medium">点击选择文件</span>
             </p>
             <p className="text-sm text-gray-500">
               支持 JPG, PNG, WebP 格式，最大 10MB
