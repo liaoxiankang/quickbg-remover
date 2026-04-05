@@ -10,14 +10,13 @@ export async function removeBackground(
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
       headers: {
-        'X-API-Key': apiKey,
+        'X-Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        image: imageBase64,
+        image_file_b64: imageBase64,
         size: 'auto',
         format: 'png',
-        type: 'auto',
       }),
     })
 
