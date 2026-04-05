@@ -15,6 +15,7 @@ export interface ImageData {
   processed?: string;
   name?: string;
   size?: number;
+  quality?: 'excellent' | 'good' | 'average';
 }
 
 export interface RemoveBgResponse {

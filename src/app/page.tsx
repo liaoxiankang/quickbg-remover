@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react'
 import DropZone from '@/components/DropZone'
 import ImagePreview from '@/components/ImagePreview'
 import ProgressBar from '@/components/ProgressBar'
+import DownloadButton from '@/components/DownloadButton'
 import { ImageData, ProcessingStatus } from '@/types'
 import { removeBackground, saveAsPng } from '@/lib/removebg'
 
@@ -12,6 +13,8 @@ export default function HomePage() {
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>({
     status: 'idle',
   })
+  const [monthlyUsage, setMonthlyUsage] = useState(0)
+  const [monthlyLimit] = useState(50)
 
   const handleFileSelect = useCallback(async (file: File) => {
     try {
@@ -19,22 +22,26 @@ export default function HomePage() {
       setImageData({ 
         original: URL.createObjectURL(file), 
         name: file.name, 
-        size: Math.round(file.size / 1024) 
+        size: Math.round(file.size / 1024),
+        quality: undefined
       })
 
-      // Convert to base64 for API
       const reader = new FileReader()
       reader.onload = async (e) => {
         const base64 = (e.target?.result as string).split(',')[1]
         setProcessingStatus({ status: 'processing', progress: 30 })
 
-        // Remove background - using environment variable
         const apiKey = process.env.NEXT_PUBLIC_REMOVE_BG_API_KEY || ''
         const result = await removeBackground(base64, apiKey)
         
         if (result.success && result.base64_image) {
           setProcessingStatus({ status: 'completed', progress: 100 })
-          setImageData(prev => prev ? { ...prev, processed: result.base64_image } : null)
+          setImageData(prev => prev ? { 
+            ...prev, 
+            processed: result.base64_image,
+            quality: 'excellent'
+          } : null)
+          setMonthlyUsage(prev => prev + 1)
         } else {
           setProcessingStatus({ 
             status: 'error', 
@@ -57,10 +64,10 @@ export default function HomePage() {
 
   const handleDownload = useCallback(() => {
     if (imageData?.processed) {
-      saveAsPng(
-        imageData.processed, 
-        imageData.name ? `no-background-${imageData.name.replace(/\.[^/.]+$/, '')}.png` : 'no-background.png'
-      )
+      const fileName = imageData.name 
+        ? `no-background-${imageData.name.replace(/\.[^/.]+$/, '')}.png`
+        : 'no-background.png'
+      saveAsPng(imageData.processed, fileName)
     }
   }, [imageData])
 
@@ -74,7 +81,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - 按照需求文档设计 */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -88,36 +95,43 @@ export default function HomePage() {
               </div>
             </div>
             
-            <div className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
-              <span className="flex items-center space-x-1">
-                <span>🔒</span>
-                <span>安全隐私</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <span>⚡</span>
-                <span>快速处理</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <span>📱</span>
-                <span>移动端支持</span>
-              </span>
+            {/* 配额显示 - 按照需求文档 */}
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+                <span>📊</span>
+                <span>本月使用：{monthlyUsage}/{monthlyLimit}</span>
+              </div>
+              <div className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
+                <span className="flex items-center space-x-1">
+                  <span>🔒</span>
+                  <span>安全隐私</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <span>⚡</span>
+                  <span>快速处理</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <span>📱</span>
+                  <span>移动端支持</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - 按照需求文档布局 */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Upload and Preview */}
+          {/* Left Column - 上传区域和预览 */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Drop Zone */}
+            {/* 上传区域 - 按照需求文档 */}
             <DropZone 
               onFileSelect={handleFileSelect}
               isProcessing={isProcessing}
             />
 
-            {/* Progress */}
+            {/* 进度指示器 - 按照需求文档 */}
             {processingStatus.status !== 'idle' && (
               <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <ProgressBar 
@@ -127,18 +141,26 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Image Preview */}
+            {/* 图片对比预览 - 按照需求文档：左侧原图，右侧处理后 */}
             <ImagePreview
               data={imageData}
               status={processingStatus.status}
               onDownload={handleDownload}
               canDownload={canDownload}
             />
+
+            {/* 下载按钮 - 按照需求文档：一键下载PNG格式 */}
+            {canDownload && (
+              <DownloadButton
+                onDownload={handleDownload}
+                fileName={imageData?.name ? `no-background-${imageData.name.replace(/\.[^/.]+$/, '')}.png` : 'no-background.png'}
+              />
+            )}
           </div>
 
-          {/* Right Column - Features and Info */}
+          {/* Right Column - 功能介绍和使用说明 */}
           <div className="space-y-6">
-            {/* Features */}
+            {/* 功能特性 - 按照需求文档 */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">为什么选择我们？</h3>
               <div className="space-y-4">
@@ -172,7 +194,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Instructions */}
+            {/* 使用方法 - 按照需求文档：清晰的步骤 */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
                 <span>📖</span>
@@ -194,7 +216,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Tips */}
+            {/* 使用提示 - 按照需求文档 */}
             <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
                 <span>💡</span>
@@ -208,7 +230,46 @@ export default function HomePage() {
               </ul>
             </div>
 
-            {/* Reset Button */}
+            {/* 常见问题 - 按照需求文档 */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                <span>❓</span>
+                <span>常见问题</span>
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium text-gray-900">支持哪些图片格式？</p>
+                  <p className="text-gray-600">支持 JPG、PNG、WebP 格式</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">图片大小有限制吗？</p>
+                  <p className="text-gray-600">最大支持 10MB 的图片文件</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">处理后的图片质量如何？</p>
+                  <p className="text-gray-600">输出高质量PNG格式，透明背景</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 联系支持 - 按照需求文档 */}
+            <div className="bg-gray-100 rounded-xl p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+                <span>📧</span>
+                <span>联系我们</span>
+              </h3>
+              <p className="text-sm text-gray-600 mb-3">
+                如有问题或建议，欢迎反馈
+              </p>
+              <a 
+                href="mailto:support@quickbg-remover.com" 
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                support@quickbg-remover.com
+              </a>
+            </div>
+
+            {/* 重新开始按钮 */}
             {processingStatus.status !== 'idle' && (
               <button
                 onClick={handleReset}
@@ -221,12 +282,19 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer - 按照需求文档 */}
       <footer className="border-t border-gray-200 bg-gray-50 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-sm text-gray-500">
             <p>© 2024 QuickBG Remover. 基于 Remove.bg API 技术支持</p>
             <p className="mt-2">本工具使用 AI 技术自动移除图片背景，处理结果仅保留在浏览器内存中</p>
+            <div className="mt-4 flex justify-center space-x-4 text-xs">
+              <a href="#" className="hover:text-gray-700">使用条款</a>
+              <span>•</span>
+              <a href="#" className="hover:text-gray-700">隐私政策</a>
+              <span>•</span>
+              <a href="#" className="hover:text-gray-700">关于我们</a>
+            </div>
           </div>
         </div>
       </footer>
