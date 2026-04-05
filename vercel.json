@@ -1,13 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "yarn install && yarn build",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
+  "installCommand": "yarn install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ]
+  "regions": ["iad1"]
 }
